@@ -488,6 +488,7 @@
 
 &sde_dp {
 	qcom,dp-usbpd-detection = <&pm6150_pdphy>;
+	status = "disabled";
 };
 
 &mdss_mdp {

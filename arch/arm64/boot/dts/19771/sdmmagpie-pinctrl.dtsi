@@ -32,7 +32,7 @@
                             function = "gpio";
                         };
                         config {
-                       			pins = "gpio63";
+                       		pins = "gpio63";
                                 drive-strength = <2>;
                                 bias-disable;
                                 input-enable;

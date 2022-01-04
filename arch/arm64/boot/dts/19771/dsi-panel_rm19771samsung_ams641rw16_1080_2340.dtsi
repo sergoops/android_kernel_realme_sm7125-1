@@ -68,6 +68,31 @@
 		oppo,bl_interpolate_nosub;
 		qcom,mdss-dsi-dc-backlight-level = <0xdc>;
 
+		oplus,bl_remap_brightness_show;
+		oppo,dsi-brightness-remapping = <0x1 0x1>, 
+		<0x2 0x2>,
+		<0x4 0x3>,
+		<0x66 0xa>,
+		<0xcc 0x19>,
+		<0x132 0x31>,
+		<0x199 0x66>,
+		<0x1ff 0xb3>,
+		<0x265 0x11a>, 
+		<0x298 0x15c>,
+		<0x2cc 0x19f>, 
+		<0x2ed 0x1d4>, 
+		<0x30f 0x20b>, 
+		<0x332 0x244>, 
+		<0x34b 0x275>, 
+		<0x365 0x2a6>, 
+		<0x37f 0x2da>, 
+		<0x398 0x30b>, 
+		<0x3b2 0x349>, 
+		<0x3cb 0x382>, 
+		<0x3e5 0x3be>, 
+		<0x3ff 0x3ff>, 
+		<0x7ff 0x7ff>;
+
 		oppo,dsi-fod-brightness = <0x0 0xff>, 
 		<0x1 0xee>, 
 		<0x2 0xe8>, 
@@ -378,16 +403,16 @@
 					39 01 00 00 00 00 03 B3 00 C0
 					39 01 00 00 00 00 03 F0 A5 A5];
 				qcom,mdss-dsi-seed-1-command = [      /* P3 Gamut */
-					39 01 00 00 00 00 02 81 90  /* CRC mode enable */
+					39 01 00 00 00 00 02 81 00  /* CRC mode enable */
 					39 01 00 00 00 00 03 F0 5A 5A
 					39 01 00 00 00 00 02 B0 02
-					39 01 00 00 00 00 16 B1 C6 00 00 21 ED 02 08 06 C1 27 FC DC E4 00 D9 E6 E7 00 FE F9 D8  /* CRC LUT */
+					39 01 00 00 00 00 16 B1 E0 00 08 10 FF 00 00 00 FF 15 FD F0 F0 00 F0 EC F0 00 FF FF FA  /* CRC LUT */
 					39 01 00 00 00 00 03 B1 00 00
 					39 01 00 00 00 00 03 F0 A5 A5
 					39 01 00 00 00 00 03 F0 5A 5A  /* Seed Tcs On */
 					39 01 00 00 00 00 02 B0 23
 					39 01 00 00 00 00 02 B3 91
-					39 01 00 00 00 00 02 83 80
+					39 01 00 00 00 00 02 83 00
 					39 01 00 00 00 00 03 B3 00 C0
 					39 01 00 00 00 00 03 F0 A5 A5];
 				qcom,mdss-dsi-seed-2-command = [      /* sRGB Gamut */
