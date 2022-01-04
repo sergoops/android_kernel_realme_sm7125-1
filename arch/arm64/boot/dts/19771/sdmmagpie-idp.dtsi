@@ -207,6 +207,7 @@
 		compatible = "nxp,tfa98xx";
 		reg = <0x35>;
 		tfa9874_vdd-supply = <&pm6150_l10>;
+		tfa98xx_fw_name = "tfa98xx.cnt";
 		status = "okay";
 	};
 };
@@ -304,6 +305,15 @@
 	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
 	qcom,mdss-dsi-mode-sel-gpio-state = "single_port";
 	qcom,platform-te-gpio = <&tlmm 37 0>;
+	qcom,platform-reset-gpio = <&pm6150l_gpios 9 0>;
+};
+
+
+&dsi_rm19771samsung_ams641rw16_1080_2340_cmd {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply_labibb_amoled>;
+	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
+	qcom,mdss-dsi-mode-sel-gpio-state = "single_port";
+	qcom,platform-te-gpio = <&tlmm 10 0>;
 	qcom,platform-reset-gpio = <&pm6150l_gpios 9 0>;
 };
 //#endif /*OPLUS_BUG_STABILITY*/
@@ -692,7 +702,8 @@
 	nfc_chipset {
 		compatible = "oppo-nfc-chipset";
 		chipset-19771-8 = "SN100T";	
-		chipset-19771-11 = "SN100T";	
+		chipset-19771-11 = "SN100T";
+		chipset-19771-54 = "SN100T";	
 	};
 	//#endif /* VENDOR_EDIT */
 	gpio_keys {
@@ -712,6 +723,35 @@
 			gpio-key,wakeup;
 		};
 	};
+	oplus_secure_common {
+				compatible = "oplus,secure_common";
+			};
+
+	oplus_fp_common {
+			compatible = "oplus,fp_common";
+			oplus,fp_gpio_num = <0x1>;
+			oplus,fp_gpio_0 = <0xffffffff 0x3f 0x0>;
+			pinctrl-names = "default";
+			pinctrl-0 = <0xffffffff>;
+
+			goodix_optical {
+				oplus,fp-id = <0x0>;
+				vendor-chip = <0xb>;
+				eng-menu = "-1,-1";
+				chip-name = "G_OPTICAL_G3";
+			};
+		};
+
+	goodix_fp {
+		compatible = "goodix,goodix_fp";
+			power-mode = <0x3>;
+			interrupt-parent = <0xffffffff>;
+			interrupts = <0x5b 0x0>;
+			goodix,gpio_irq = <0xffffffff 0x5b 0x1>;
+			goodix,gpio_reset = <0xffffffff 0x5a 0x0>;
+			pinctrl-names = "default";
+			pinctrl-0 = <0xffffffff>;
+		};
 };
 
 &thermal_zones {

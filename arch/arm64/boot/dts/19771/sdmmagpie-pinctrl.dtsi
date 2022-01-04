@@ -24,7 +24,35 @@
 		#gpio-cells = <2>;
 		interrupt-controller;
 		#interrupt-cells = <2>;
-
+		
+        oplus_fp_common{
+                gpio_id2_default: gpio_id2_default {
+                        mux {
+                            pins = "gpio63";
+                            function = "gpio";
+                        };
+                        config {
+                       			pins = "gpio63";
+                                drive-strength = <2>;
+                                bias-disable;
+                                input-enable;
+                        };
+                };
+        };
+        goodix_fp{
+            gpio_goodix_irq_default: gpio_goodix_irq_default {
+                        mux {
+                                pins = "gpio91";
+                                function = "gpio";
+                        };
+                        config {
+                                pins = "gpio91";
+                                drive-strength = <2>;
+                                bias-disable;
+                                input-enable;
+                        };
+                };
+        };		
 		ufs_dev_reset_assert: ufs_dev_reset_assert {
 			config {
 				pins = "ufs_reset";
