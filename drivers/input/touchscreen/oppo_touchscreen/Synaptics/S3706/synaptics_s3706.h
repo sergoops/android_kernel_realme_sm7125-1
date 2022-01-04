@@ -1,17 +1,7 @@
-/***************************************************
- * File:synaptics_drivers_s3508.h
- * VENDOR_EDIT
- * Copyright (c)  2008- 2030  Oppo Mobile communication Corp.ltd.
- * Description:
- *                         synaptics s3508 driver
- * Version:1.0:
- * Date : 2016/09/02
- * Author: Tong.han@Bsp.Driver
- * TAG: BSP.TP.Init
- * *
- * -------------- Revision History: -----------------
- *  <author >  <data>  <version>  <desc>
- ***************************************************/
+/* SPDX-License-Identifier: GPL-2.0-only */
+/*
+ * Copyright (C) 2018-2020 Oplus. All rights reserved.
+ */
 
 #ifndef SYNAPTICS_H_S3508
 #define SYNAPTICS_H_S3508
@@ -156,12 +146,6 @@ enum flash_area {
         NONE = 0,
         UI_FIRMWARE,
         UI_CONFIG,
-};
-
-enum update_mode {
-        NORMAL = 1,
-        FORCE = 2,
-        LOCKDOWN = 8,
 };
 
 enum config_area {

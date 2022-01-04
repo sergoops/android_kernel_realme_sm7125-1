@@ -1,20 +1,12 @@
-/**************************************************************
- * Copyright (c)  2008- 2030  Oppo Mobile communication Corp.ltd.£¬
- * VENDOR_EDIT
- * File           : synaptics_drivers_s3508.c
- * Description: Source file for synaptics S3508 driver
- * Version   : 1.0
- * Date                : 2016-09-02
- * Author        : Tong.han@Bsp.Group.Tp
- * TAG                 : BSP.TP.Init
- * ---------------- Revision History: --------------------------
- *   <version>        <date>                  < author >                                                        <desc>
- * Revision 1.1, 2016-09-09, Tong.han@Bsp.Group.Tp, modify based on gerrit review result(http://gerrit.scm.adc.com:8080/#/c/223721/)
- ****************************************************************/
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Copyright (C) 2018-2020 Oplus. All rights reserved.
+ */
+
 #include <linux/of_gpio.h>
 #include <linux/delay.h>
 #include <linux/sysfs.h>
-#include <asm/uaccess.h>
+#include <linux/uaccess.h>
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/hrtimer.h>
@@ -76,7 +68,7 @@ static int synaptics_get_touch_points(void *chip_data, struct point_info *points
         static int enable_obj_attention = 0;
         unsigned char fingers_to_process = max_num;
         struct chip_data_s3706 *chip_info = (struct chip_data_s3706 *)chip_data;
-        char buf[8*max_num];
+        char buf[80];
 
         memset(buf, 0, sizeof(buf));
         obj_attention = touch_i2c_read_word(chip_info->client, chip_info->reg_info.F12_2D_DATA15);
@@ -1248,7 +1240,11 @@ static int synaptics_capacity_test(struct seq_file *s, struct chip_data_s3706 *c
         TPD_INFO("\n step 1:Close CBC and test RT20\n");
         if (syna_testdata->fd >= 0) {
                 sprintf(data_buf, "%s\n", "[RT20 Close CBC]");
+#ifdef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
+                ksys_write(syna_testdata->fd, data_buf, strlen(data_buf));
+#else
                 sys_write(syna_testdata->fd, data_buf, strlen(data_buf));
+#endif
         }
         ret = touch_i2c_write_byte(chip_info->client, chip_info->reg_info.F54_ANALOG_DATA_BASE, 0x14);/*select report type 0x14*/
         if (ret < 0) {
@@ -1289,7 +1285,11 @@ static int synaptics_capacity_test(struct seq_file *s, struct chip_data_s3706 *c
 
                         if (syna_testdata->fd >= 0) {
                                 sprintf(data_buf, "%d, ", baseline_data);
+#ifdef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
+                                ksys_write(syna_testdata->fd, data_buf, strlen(data_buf));
+#else
                                 sys_write(syna_testdata->fd, data_buf, strlen(data_buf));
+#endif
                         }
 
                         if ((y < syna_testdata->RX_NUM - syna_testdata->key_RX) && (x < syna_testdata->TX_NUM - syna_testdata->key_TX)) {
@@ -1318,18 +1318,30 @@ static int synaptics_capacity_test(struct seq_file *s, struct chip_data_s3706 *c
                         count++;
                 }
                 if (syna_testdata->fd >= 0) {
+#ifdef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
+                        ksys_write(syna_testdata->fd, "\n", 1);
+#else
                         sys_write(syna_testdata->fd, "\n", 1);
+#endif
                 }
                 TPD_DEBUG_NTAG("\n");
         }
         if (syna_testdata->fd >= 0) {
+#ifdef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
+                ksys_write(syna_testdata->fd, "\n", 1);
+#else
                 sys_write(syna_testdata->fd, "\n", 1);
+#endif
         }
         /*step 2:check raw capacitance, Open CBC and testRT3*/
         TPD_INFO("\n step 2:Open CBC and test RT3\n");
         if (syna_testdata->fd >= 0) {
                 sprintf(data_buf, "%s\n", "[RT3 Open CBC]");
+#ifdef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
+                ksys_write(syna_testdata->fd, data_buf, strlen(data_buf));
+#else
                 sys_write(syna_testdata->fd, data_buf, strlen(data_buf));
+#endif
         }
 
         ret = touch_i2c_write_byte(chip_info->client, chip_info->reg_info.F54_ANALOG_DATA_BASE, 0x03);/*select report type 0x03*/
@@ -1374,7 +1386,11 @@ static int synaptics_capacity_test(struct seq_file *s, struct chip_data_s3706 *c
 
                         if (syna_testdata->fd >= 0) {
                                 sprintf(data_buf, "%d, ", baseline_data);
+#ifdef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
+                                ksys_write(syna_testdata->fd, data_buf, strlen(data_buf));
+#else
                                 sys_write(syna_testdata->fd, data_buf, strlen(data_buf));
+#endif
                         }
                         if ((y < syna_testdata->RX_NUM - syna_testdata->key_RX) && (x < syna_testdata->TX_NUM - syna_testdata->key_TX)) {
                                 TPD_DEBUG_NTAG("%d, ", baseline_data);
@@ -1401,7 +1417,11 @@ static int synaptics_capacity_test(struct seq_file *s, struct chip_data_s3706 *c
                         count++;
                 }
                 if (syna_testdata->fd >= 0) {
+#ifdef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
+                        ksys_write(syna_testdata->fd, "\n", 1);
+#else
                         sys_write(syna_testdata->fd, "\n", 1);
+#endif
                 }
                 TPD_DEBUG_NTAG("\n");
         }
@@ -1418,9 +1438,14 @@ static int synaptics_auto_test_rt25(struct seq_file *s, struct chip_data_s3706 *
         int i = 0, j = 0, x = 0;
         int error_count = 0;
         uint8_t buffer[9];
-        uint8_t buffer_rx[syna_testdata->RX_NUM];
-        uint8_t buffer_tx[syna_testdata->TX_NUM];
+        uint8_t *buffer_rx = NULL;
+        uint8_t *buffer_tx = NULL;
+        //uint8_t buffer_rx[syna_testdata->RX_NUM];
+        //uint8_t buffer_tx[syna_testdata->TX_NUM];
         int sum_line_error = 0;
+
+        buffer_rx = kzalloc(syna_testdata->RX_NUM * (sizeof(uint8_t)), GFP_KERNEL);
+        buffer_tx = kzalloc(syna_testdata->TX_NUM * (sizeof(uint8_t)), GFP_KERNEL);
 
         /*step 3 :check TRx-to-Ground, with rt25*/
         TPD_INFO("step 3:check TRx-to-Ground, with rt25\n");
@@ -1459,7 +1484,7 @@ static int synaptics_auto_test_rt25(struct seq_file *s, struct chip_data_s3706 *
                                                         error_count++;
                                                         TPD_INFO(" step 3 :check TRx-to-Ground, with rt25 error,  error_line is rx = %d\n", buffer_rx[j]);
                                                         seq_printf(s, " step 3 :check TRx-to-Ground, with rt25,  error_line is rx = %d\n", buffer_rx[j]);
-                                                        return error_count;
+                                                        goto OUT;
                                                 }
                                         }
                                         for (j = 0; j < syna_testdata->TX_NUM; j++) {
@@ -1467,7 +1492,7 @@ static int synaptics_auto_test_rt25(struct seq_file *s, struct chip_data_s3706 *
                                                         error_count++;
                                                         TPD_INFO(" step 3 :check TRx-to-Ground, with rt25, error_line is tx = %d\n", buffer_tx[j]);
                                                         seq_printf(s, " step 3 :check TRx-to-Ground, with rt25, error_line is rx = %d\n", buffer_rx[j]);
-                                                        return error_count;
+                                                        goto OUT;
                                                 }
                                         }
                                 }
@@ -1475,6 +1500,11 @@ static int synaptics_auto_test_rt25(struct seq_file *s, struct chip_data_s3706 *
                 }
         }
 
+OUT:
+        kfree(buffer_rx);
+        buffer_rx = NULL;
+        kfree(buffer_tx);
+        buffer_tx = NULL;
         return error_count;
 }
 
@@ -1484,8 +1514,14 @@ static int synaptics_auto_test_rt26(struct seq_file *s, struct chip_data_s3706 *
         int error_count = 0;
         int i = 0, x = 0;
         uint8_t buffer[9];
-        uint8_t buffer_rx[syna_testdata->RX_NUM];
-        uint8_t buffer_tx[syna_testdata->TX_NUM];
+        uint8_t *buffer_rx;
+        uint8_t *buffer_tx;
+        //uint8_t buffer_rx[syna_testdata->RX_NUM];
+        //uint8_t buffer_tx[syna_testdata->TX_NUM];
+        //int sum_line_error = 0;
+
+        buffer_rx = kzalloc(syna_testdata->RX_NUM * (sizeof(uint8_t)), GFP_KERNEL);
+        buffer_tx = kzalloc(syna_testdata->TX_NUM * (sizeof(uint8_t)), GFP_KERNEL);
 
         /*step 4 :check tx-to-tx and tx-to-vdd*/
         TPD_INFO("step 4:check TRx-TRx & TRx-Vdd short\n");
@@ -1534,6 +1570,10 @@ static int synaptics_auto_test_rt26(struct seq_file *s, struct chip_data_s3706 *
         }
     }
 
+        kfree(buffer_rx);
+        buffer_rx = NULL;
+        kfree(buffer_tx);
+        buffer_tx = NULL;
         return error_count;
 }
 
@@ -1547,10 +1587,14 @@ static int synaptics_auto_test_rt100(struct seq_file *s, struct chip_data_s3706 
         short * p_data_baseline1 = NULL;
         short * p_data_baseline2 = NULL;
         short * p_data_delta = NULL;
-        uint8_t rx_assignment[syna_testdata->RX_NUM];
-        uint8_t rx_physical[syna_testdata->RX_NUM];
-        short minRX[syna_testdata->RX_NUM + 1];
-        short maxRX[syna_testdata->RX_NUM + 1];
+        //uint8_t rx_assignment[syna_testdata->RX_NUM];
+        //uint8_t rx_physical[syna_testdata->RX_NUM];
+        //short minRX[syna_testdata->RX_NUM + 1];
+        //short maxRX[syna_testdata->RX_NUM + 1];
+        uint8_t *rx_assignment = NULL;
+        uint8_t *rx_physical = NULL;
+        short *minRX = NULL;
+        short *maxRX = NULL;
         unsigned char logical_pin = 0xff;
         uint8_t ExtendRT26_pin[4] = {0, 1, 32, 33};
 
@@ -1580,6 +1624,11 @@ static int synaptics_auto_test_rt100(struct seq_file *s, struct chip_data_s3706 
                 p_data_baseline2 = NULL;
                 return error_count;
         }
+
+        rx_assignment = kzalloc(syna_testdata->RX_NUM * (sizeof(uint8_t)), GFP_KERNEL);
+        rx_physical = kzalloc(syna_testdata->RX_NUM * (sizeof(uint8_t)), GFP_KERNEL);
+        minRX = kzalloc((syna_testdata->RX_NUM + 1) * (sizeof(short)), GFP_KERNEL);
+        maxRX = kzalloc((syna_testdata->RX_NUM + 1) * (sizeof(short)), GFP_KERNEL);
 
         //step 5:check RT100 for pin 0,1,32,33
         TPD_INFO("step 5:check RT100 for pin 0,1,32,33\n");
@@ -1625,7 +1674,7 @@ static int synaptics_auto_test_rt100(struct seq_file *s, struct chip_data_s3706 
         }
 
         for(i = 0; i < 4; i++) {
-                for(j = 0; j < 34; j++) {
+                for(j = 0; j < syna_testdata->RX_NUM; j++) {
             minRX[j] = 5000;
             maxRX[j] = 0;
                 }
@@ -1635,7 +1684,7 @@ static int synaptics_auto_test_rt100(struct seq_file *s, struct chip_data_s3706 
                 if (logical_pin == 0xFF)
                         continue;
 
-                TPD_INFO("\ninfo: RT26 pin %d, logical pin %d \n", ExtendRT26_pin[i], logical_pin);
+                //TPD_INFO("\ninfo: RT26 pin %d, logical pin %d \n", ExtendRT26_pin[i], logical_pin);
 
                 // 14. set local CBC to 8pf(2D) 3.5pf(0D)
         temp_data[logical_pin] = 0x0f;          //EXTENDED_TRX_SHORT_CBC;
@@ -1728,6 +1777,14 @@ END:
         p_data_baseline2 = NULL;
         kfree(p_data_delta);
         p_data_delta = NULL;
+        kfree(rx_assignment);
+        rx_assignment = NULL;
+        kfree(rx_physical);
+        rx_physical = NULL;
+        kfree(minRX);
+        minRX = NULL;
+        kfree(maxRX);
+        maxRX = NULL;
         return error_count;
 }
 
@@ -1779,7 +1836,11 @@ static int synaptics_auto_test_rt150(struct seq_file *s, struct chip_data_s3706 
         TPD_INFO("Step 7 : Check RT150 for random touch event\n");
         if (syna_testdata->fd >= 0) {
                 sprintf(data_buf, "%s\n", "[RT150]");
+#ifdef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
+                ksys_write(syna_testdata->fd, data_buf, strlen(data_buf));
+#else
                 sys_write(syna_testdata->fd, data_buf, strlen(data_buf));
+#endif
         }
         ret = touch_i2c_write_byte(chip_info->client, 0xff, 0x01);        /* page 1*/
         ret = touch_i2c_write_byte(chip_info->client, chip_info->reg_info.F54_ANALOG_DATA_BASE, 0x96);/*select report type RT150*/
@@ -1794,7 +1855,11 @@ static int synaptics_auto_test_rt150(struct seq_file *s, struct chip_data_s3706 
                 unsigned_baseline_data = (tmp_arg2 << 8) | tmp_arg1;
                 if (syna_testdata->fd >= 0) {
                         sprintf(data_buf, "%d, ", unsigned_baseline_data);
+#ifdef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
+                        ksys_write(syna_testdata->fd, data_buf, strlen(data_buf));
+#else
                         sys_write(syna_testdata->fd, data_buf, strlen(data_buf));
+#endif
                 }
                 if (unsigned_baseline_data < 7000) {
                         error_count++;
@@ -1804,7 +1869,11 @@ static int synaptics_auto_test_rt150(struct seq_file *s, struct chip_data_s3706 
                 }
         }
         if (syna_testdata->fd >= 0) {
+#ifdef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
+                ksys_write(syna_testdata->fd, "\n", 1);
+#else
                 sys_write(syna_testdata->fd, "\n", 1);
+#endif
         }
 
         return error_count;
@@ -1822,7 +1891,11 @@ static int synaptics_auto_test_rt154(struct seq_file *s, struct chip_data_s3706 
         TPD_INFO("Step 8 : Check RT154 for self raw data check\n");
         if (syna_testdata->fd >= 0) {
                 sprintf(data_buf, "%s\n", "[RT154]");
+#ifdef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
+                ksys_write(syna_testdata->fd, data_buf, strlen(data_buf));
+#else
                 sys_write(syna_testdata->fd, data_buf, strlen(data_buf));
+#endif
         }
         ret = touch_i2c_write_byte(chip_info->client, 0xff, 0x01);        /* page 1*/
         ret = touch_i2c_write_byte(chip_info->client, chip_info->reg_info.F54_ANALOG_DATA_BASE, 0x9A);/*select report type 0xFE*/
@@ -1837,7 +1910,11 @@ static int synaptics_auto_test_rt154(struct seq_file *s, struct chip_data_s3706 
                 unsigned_baseline_data = (tmp_arg2 << 8) | tmp_arg1;
                 if (syna_testdata->fd >= 0) {
                         sprintf(data_buf, "%d, ", unsigned_baseline_data);
+#ifdef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
+                        ksys_write(syna_testdata->fd, data_buf, strlen(data_buf));
+#else
                         sys_write(syna_testdata->fd, data_buf, strlen(data_buf));
+#endif
                 }
                 if ((syna_testdata->key_RX != 0 || syna_testdata->key_TX != 0)
                         && (((y > chip_info->hw_res->RX_NUM - syna_testdata->key_RX - 1) && (y < chip_info->hw_res->RX_NUM))
@@ -1853,7 +1930,11 @@ static int synaptics_auto_test_rt154(struct seq_file *s, struct chip_data_s3706 
                 }
         }
         if (syna_testdata->fd >= 0) {
+#ifdef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
+                ksys_write(syna_testdata->fd, "\n", 1);
+#else
                 sys_write(syna_testdata->fd, "\n", 1);
+#endif
         }
 
         return error_count;
@@ -1871,7 +1952,11 @@ static int synaptics_auto_test_rt155(struct seq_file *s, struct chip_data_s3706 
         TPD_INFO("Step 9 : Check RT155 for abs delta\n");
         if (syna_testdata->fd >= 0) {
                 sprintf(data_buf, "%s\n", "[RT155]");
+#ifdef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
+                ksys_write(syna_testdata->fd, data_buf, strlen(data_buf));
+#else
                 sys_write(syna_testdata->fd, data_buf, strlen(data_buf));
+#endif
         }
         ret = touch_i2c_write_byte(chip_info->client, 0xff, 0x01);        /* page 1*/
         ret = touch_i2c_read_byte(chip_info->client, chip_info->reg_info.F54_ANALOG_CONTROL_BASE);      /*get 0x10E status*/
@@ -1891,7 +1976,11 @@ static int synaptics_auto_test_rt155(struct seq_file *s, struct chip_data_s3706 
                 baseline_data = (tmp_arg2 << 8) | tmp_arg1;
                 if (syna_testdata->fd >= 0) {
                         sprintf(data_buf, "%d, ", baseline_data);
+#ifdef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
+                        ksys_write(syna_testdata->fd, data_buf, strlen(data_buf));
+#else
                         sys_write(syna_testdata->fd, data_buf, strlen(data_buf));
+#endif
                 }
                 if (baseline_data > 2000) {
                         error_count++;
@@ -1901,7 +1990,11 @@ static int synaptics_auto_test_rt155(struct seq_file *s, struct chip_data_s3706 
                 }
         }
         if (syna_testdata->fd >= 0) {
+#ifdef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
+                ksys_write(syna_testdata->fd, "\n", 1);
+#else
                 sys_write(syna_testdata->fd, "\n", 1);
+#endif
         }
 
         return error_count;
@@ -1918,7 +2011,11 @@ static int synaptics_auto_test_rt155_fd(struct seq_file *s, struct chip_data_s37
         TPD_INFO("Step 9 : Check RT155 for fd abs noise\n");
         if (syna_testdata->fd >= 0) {
                 sprintf(data_buf, "%s\n", "[RT155]");
+#ifdef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
+                ksys_write(syna_testdata->fd, data_buf, strlen(data_buf));
+#else
                 sys_write(syna_testdata->fd, data_buf, strlen(data_buf));
+#endif
         }
         ret = touch_i2c_write_byte(chip_info->client, 0xff, 0x01);        /* page 1*/
         ret |= touch_i2c_write_byte(chip_info->client, chip_info->reg_info.F54_ANALOG_DATA_BASE, 0x9B);/*select report type 0x9B*/
@@ -1936,7 +2033,11 @@ static int synaptics_auto_test_rt155_fd(struct seq_file *s, struct chip_data_s37
                 max_node_data = (raw_data[j*2] | (raw_data[j*2+1]  << 8));
                 if (syna_testdata->fd >= 0) {
                         sprintf(data_buf, "%d, ", max_node_data);
+#ifdef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
+                        ksys_write(syna_testdata->fd, data_buf, strlen(data_buf));
+#else
                         sys_write(syna_testdata->fd, data_buf, strlen(data_buf));
+#endif
                 }
                 if (max_node_data > judge_threshold) {
                         TPD_INFO("Check RT155 for fd abs noise, data[%d] = %d(%d)\n", j, max_node_data, judge_threshold);
@@ -1946,7 +2047,11 @@ static int synaptics_auto_test_rt155_fd(struct seq_file *s, struct chip_data_s37
                 }
         }
         if (syna_testdata->fd >= 0) {
+#ifdef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
+                ksys_write(syna_testdata->fd, "\n", 1);
+#else
                 sys_write(syna_testdata->fd, "\n", 1);
+#endif
         }
 
         return error_count;
@@ -1966,7 +2071,11 @@ static int synaptics_auto_test_rt59(struct seq_file *s, struct chip_data_s3706 *
         TPD_INFO("Step 9 : Check RT59 for abs delta\n");
         if (syna_testdata->fd >= 0) {
                 sprintf(data_buf, "%s\n", "[RT59]");
+#ifdef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
+                ksys_write(syna_testdata->fd, data_buf, strlen(data_buf));
+#else
                 sys_write(syna_testdata->fd, data_buf, strlen(data_buf));
+#endif
         }
         ret = touch_i2c_write_byte(chip_info->client, 0xff, 0x01);        /* page 1*/
         ret = touch_i2c_write_byte(chip_info->client, chip_info->reg_info.F54_ANALOG_DATA_BASE, 0x3B);/*select report type 59*/
@@ -1989,7 +2098,11 @@ static int synaptics_auto_test_rt59(struct seq_file *s, struct chip_data_s3706 *
         for (i = 0; i < syna_testdata->RX_NUM; i++) {
                 if (syna_testdata->fd >= 0) {
                         sprintf(data_buf, "%d, ", max_store[i]);
+#ifdef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
+                        ksys_write(syna_testdata->fd, data_buf, strlen(data_buf));
+#else
                         sys_write(syna_testdata->fd, data_buf, strlen(data_buf));
+#endif
                 }
                 if (abs(max_store[i]) > judge_threshold) {
                         TPD_INFO("Check RT59 for abs noise, data[%d] = %d(%d)\n", i, max_store[i], judge_threshold);
@@ -1999,7 +2112,11 @@ static int synaptics_auto_test_rt59(struct seq_file *s, struct chip_data_s3706 *
                 }
         }
         if (syna_testdata->fd >= 0) {
+#ifdef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
+                ksys_write(syna_testdata->fd, "\n", 1);
+#else
                 sys_write(syna_testdata->fd, "\n", 1);
+#endif
         }
 
         return error_count;
@@ -2016,7 +2133,11 @@ static int synaptics_auto_test_rt63(struct seq_file *s, struct chip_data_s3706 *
         TPD_INFO("Step 9 : Check RT63 for hover sensing\n");
         if (syna_testdata->fd >= 0) {
                 sprintf(data_buf, "%s\n", "[RT63]");
+#ifdef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
+                ksys_write(syna_testdata->fd, data_buf, strlen(data_buf));
+#else
                 sys_write(syna_testdata->fd, data_buf, strlen(data_buf));
+#endif
         }
 
         ret = touch_i2c_write_byte(chip_info->client, 0xff, 0x01);        /* page 1*/
@@ -2038,7 +2159,11 @@ static int synaptics_auto_test_rt63(struct seq_file *s, struct chip_data_s3706 *
             node_data = (raw_data[i*4] | (raw_data[i*4+1]  << 8) | (raw_data[i*4+2]  << 16) | (raw_data[i*4+3]  << 24));
             if (syna_testdata->fd >= 0) {
                     sprintf(data_buf, "%d, ", node_data);
+#ifdef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
+                    ksys_write(syna_testdata->fd, data_buf, strlen(data_buf));
+#else
                     sys_write(syna_testdata->fd, data_buf, strlen(data_buf));
+#endif
             }
             if ((node_data < 10000) || (node_data > 60000)) {
                 TPD_INFO("Check RT63 for hover, data[%d] = %d\n", i, node_data);
@@ -2048,7 +2173,11 @@ static int synaptics_auto_test_rt63(struct seq_file *s, struct chip_data_s3706 *
             }
         }
         if (syna_testdata->fd >= 0) {
+#ifdef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
+                ksys_write(syna_testdata->fd, "\n", 1);
+#else
                 sys_write(syna_testdata->fd, "\n", 1);
+#endif
         }
 
         return error_count;
@@ -2096,7 +2225,11 @@ static void synaptics_auto_test(struct seq_file *s, void *chip_data, struct syna
                 seq_printf(s, "eint_status is low, TP EINT direct stort\n");
                 sprintf(data_buf, "eint_status is low, TP EINT direct stort, \n");
                 if (syna_testdata->fd >= 0) {
+#ifdef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
+                        ksys_write(syna_testdata->fd, data_buf, strlen(data_buf));
+#else
                         sys_write(syna_testdata->fd, data_buf, strlen(data_buf));
+#endif
                 }
                 eint_count = 0;
                 goto END;
@@ -2445,7 +2578,11 @@ static void synaptics_get_gesture_coord(void *chip_data, uint32_t gesture_type)
         old_fs = get_fs();
         set_fs(KERNEL_DS);
         if(loop == 0) {
+#ifdef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
+                fd = ksys_open(gesture_file_bf, O_WRONLY | O_CREAT | O_TRUNC, 0);
+#else
                 fd = sys_open(gesture_file_bf, O_WRONLY | O_CREAT | O_TRUNC, 0);
+#endif
                 if (fd < 0) {
                         TPD_INFO("Open gesture_file_bf file '%s' failed.\n", gesture_file_bf);
                         set_fs(old_fs);
@@ -2472,8 +2609,13 @@ static void synaptics_get_gesture_coord(void *chip_data, uint32_t gesture_type)
                         strcat(str_gesture, str_tmp);
                 }
         }
+#ifdef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
+        ksys_write(fd, str_gesture, strlen(str_gesture));
+        ksys_write(fd, "\n", 1);
+#else
         sys_write(fd, str_gesture, strlen(str_gesture));
         sys_write(fd, "\n", 1);
+#endif
         TPD_INFO("str_gesture:%s\n", str_gesture);
         if (gesture_type == DouSwip) {
             TPD_INFO("str_gessec\n");
@@ -2494,8 +2636,13 @@ static void synaptics_get_gesture_coord(void *chip_data, uint32_t gesture_type)
                             strcat(str_gesture, str_tmp);
                     }
             }
+#ifdef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
+            ksys_write(fd, str_gesture, strlen(str_gesture));
+            ksys_write(fd, "\n", 1);
+#else
             sys_write(fd, str_gesture, strlen(str_gesture));
             sys_write(fd, "\n", 1);
+#endif
             TPD_INFO("str_gesture:%s\n", str_gesture);
         }
     //    if (fd >= 0) {
@@ -5439,7 +5586,7 @@ static int synaptics_set_report_point_first(void *chip_data, uint32_t enable)
         if (enable) {//enable game mode control flag
                 ret = touch_i2c_write_byte(chip_info->client, chip_info->reg_info.F51_CUSTOM_CTRL13, (ret | 0x04));
                 if (ret < 0) {
-                        touch_i2c_write_byte(chip_info->client, 0xff, 0x00);        /* page 0*/
+                        touch_i2c_write_byte(chip_info->client, 0xff, 0x00);            /* page 0*/
                         TPD_INFO("%s failed for game mode control\n", __func__);
                         return ret;
                 }
@@ -5447,7 +5594,7 @@ static int synaptics_set_report_point_first(void *chip_data, uint32_t enable)
                 ret = touch_i2c_write_byte(chip_info->client, chip_info->reg_info.F51_CUSTOM_CTRL13, (ret & 0xFB));
                 if (ret < 0) {
                         TPD_INFO("%s failed for disable game mode control\n", __func__);
-                        touch_i2c_write_byte(chip_info->client, 0xff, 0x00);        /* page 0*/
+                        touch_i2c_write_byte(chip_info->client, 0xff, 0x00);            /* page 0*/
                         return ret;
                 }
         }
