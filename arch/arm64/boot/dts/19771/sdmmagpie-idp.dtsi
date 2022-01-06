@@ -50,7 +50,7 @@
 			sensor-index = <0>;
 			sensor-type = <2>;//OPPO_MAG
 			parameter-number= <18>;
-			soft-mag-parameter = <0x2865 0x0 0x628 0x0 0x21 0x1 0x818 0x0 0x23af 0x0 0xf2 0x1 0x3bf 0x0 0x28b 0x1 0x29fa 0x0>;
+			soft-mag-parameter = <10341 0 1576 0 33 1 2072 0 9135 0 242 1 959 0 651 1 10746 0>;
 		};
 		/*virtual sensor
 		enum sensor_algo_id {
@@ -144,7 +144,6 @@
 		qcom,nq-ven = <&tlmm 67 0x00>;
 		qcom,nq-firm = <&tlmm 36 0x00>;
 		qcom,nq-clkreq = <&tlmm 31 0x00>;
-		qcom,nq-esepwr = <&tlmm 94 0x00>;
 		interrupt-parent = <&tlmm>;
 		interrupts = <37 0>;
 		interrupt-names = "nfc_irq";
@@ -569,23 +568,21 @@
 		      <&pm6150_vadc ADC_DIE_TEMP>,
 		      <&pm6150l_vadc ADC_AMUX_THM1_PU2>,
 		      <&pm6150_vadc ADC_SBUx>,
-		      <&pm6150_vadc ADC_VPH_PWR>;
+		      <&pm6150l_vadc ADC_AMUX_THM1>,
+		      <&pm6150_vadc ADC_AMUX_THM3>,
+		      <&pm6150_vadc ADC_VPH_PWR>,
+		      <&pm6150_vadc ADC_GPIO4>;
 	io-channel-names = "usb_in_voltage",
 			   "usb_in_current",
 			   "chg_temp",
 			   "die_temp",
 			   "conn_temp",
 			   "sbux_res",
-			   "vph_voltage";
+			   "usb_temp1",
+			   "usb_temp2",
+			   "vph_voltage",
+			   "chgid_voltage";
 	qcom,battery-data = <&mtp_batterydata>;
-	qcom,auto-recharge-soc = <98>;
-	qcom,step-charging-enable;
-	qcom,sw-jeita-enable;
-	qcom,fcc-stepping-enable;
-	qcom,suspend-input-on-debug-batt;
-	qcom,sec-charger-config = <3>;
-	qcom,thermal-mitigation = <4200000 3500000 3000000
-			2500000 2000000 1500000 1000000 500000>;
 	dpdm-supply = <&qusb_phy0>;
 	qcom,charger-temp-max = <800>;
 	qcom,smb-temp-max = <800>;
@@ -680,14 +677,14 @@
 
 	oplus_fp_common {
 			compatible = "oplus,fp_common";
-			oplus,fp_gpio_num = <0x1>;
-			oplus,fp_gpio_0 = <0xffffffff 0x3f 0x0>;
+			oplus,fp_gpio_num = <1>;
+			oplus,fp_gpio_0 = <&tlmm 63 0x0>;
 			pinctrl-names = "default";
 			pinctrl-0 = <&gpio_id2_default>;
 
 			goodix_optical {
-				oplus,fp-id = <0x0>;
-				vendor-chip = <0xb>;
+				oplus,fp-id = <0>;
+				vendor-chip = <11>;
 				eng-menu = "-1,-1";
 				chip-name = "G_OPTICAL_G3";
 			};
@@ -695,11 +692,11 @@
 
 	goodix_fp {
 		compatible = "goodix,goodix_fp";
-			power-mode = <0x3>;
-			interrupt-parent = <0xffffffff>;
-			interrupts = <0x5b 0x0>;
-			goodix,gpio_irq = <0xffffffff 0x5b 0x1>;
-			goodix,gpio_reset = <0xffffffff 0x5a 0x0>;
+			power-mode = <3>;
+			interrupt-parent = <&tlmm>;
+			interrupts = <91 0>;
+			goodix,gpio_irq = <&tlmm 91 0x1>;
+			goodix,gpio_reset = <&tlmm 90 0x0>;
 			pinctrl-names = "default";
 			pinctrl-0 = <&gpio_goodix_irq_default>;
 		};
