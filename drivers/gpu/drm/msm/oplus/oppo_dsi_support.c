@@ -89,9 +89,13 @@ int set_oppo_display_vendor(const char *display_name)
 	} else if (!strcmp(display_name, "dsi_oppo19031samsung_ams655ue01_1080_2400_61fps_cmd_display")) {
 		oppo_display_vendor = OPPO_SAMSUNG_AMS655UE01_DISPLAY_FHD_PLUS_61FPS_PANEL;
 		register_device_proc("lcd", "AMS655UE01", "samsung1024");
+	} else if (!strcmp(display_name,"dsi_rm19771_samsung_ams641rw16_1080_2340_cmd_display")) {
+		register_device_proc("lcd", "AMS641RW16", "samsung1024");
+		oppo_display_vendor = OPPO_SAMSUNG_AMS641RW16_DISPLAY_FHD_PLUS_CMD_PANEL;
 	} else if (!strcmp(display_name, "dsi_oppo19111samsung_ams641rw16_1080_2340_cmd_display")) {
 		oppo_display_vendor = OPPO_SAMSUNG_AMS641RW16_DISPLAY_FHD_PLUS_CMD_PANEL;
 		register_device_proc("lcd", "AMS641RW16", "samsung1024");
+
 	/* Chao.Zhang@MULTIMEDIA.DISPLAY.LCD, 2020/09/25, add for 19081 LCD */
 	} else if (!strcmp(display_name, "dsi_samsung_fhd_plus_dsc_cmd_90fps_display")) {
 		oppo_display_vendor = OPPO_SAMSUNG_SOFEF03F_M_DISPLAY_FHD_DSC_CMD_PANEL;
