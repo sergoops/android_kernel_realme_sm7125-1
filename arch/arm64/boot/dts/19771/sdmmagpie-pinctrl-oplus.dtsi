@@ -40,6 +40,19 @@
 				bias-pull-up;
 			};
 		};
+
+		rf_cable1_active: rf_cable1_active {
+			mux {
+				pins = "gpio88";
+				function = "gpio";
+			};
+			config {
+				pins = "gpio88";
+				drive-strength = <2>;
+				input-enable;
+				bias-pull-up;
+			};
+		};
 	};
 };
 

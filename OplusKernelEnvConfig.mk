@@ -188,25 +188,6 @@ ifeq ($(OPLUS_FEATURE_LCD_CABC),yes)
 KBUILD_CFLAGS += -DOPLUS_FEATURE_LCD_CABC
 endif
 
-#ifdef OPLUS_FEATURE_POWERINFO_STANDBY
-#Yunqing.Zeng@BSP.Power.Basic, 2020/09/10, add for feature powerinfo standby.
-inner_mk_path := $(abspath $(lastword $(MAKEFILE_LIST)))
-inner_mk_dir := $(shell dirname $(inner_mk_path))
-inner_oplus_wakelock_dir1 := $(inner_mk_dir)/../vendor/oplus/kernel/wakelock_profiler
-inner_oplus_wakelock_dir2 := $(inner_mk_dir)/../vendor/oplus/kernel/oppo_wakelock_profiler
-inner_oplus_wakelock_dir1_exist := $(shell if [ -d $(inner_oplus_wakelock_dir1) ]; then echo "exist"; else echo "notexist"; fi;)
-inner_oplus_wakelock_dir2_exist := $(shell if [ -d $(inner_oplus_wakelock_dir2) ]; then echo "exist"; else echo "notexist"; fi;)
-
-inner_oplus_link_name := oplus_wakelock
-inner_oplus_link_target := $(inner_mk_dir)/../kernel/msm-5.4/drivers/soc/oplus/$(inner_oplus_link_name)
-ifeq ($(inner_oplus_wakelock_dir1_exist), exist)
-$(shell ln -sf $(inner_oplus_wakelock_dir1) $(inner_oplus_link_target))
-else ifeq ($(inner_oplus_wakelock_dir2_exist), exist)
-$(shell ln -sf $(inner_oplus_wakelock_dir2) $(inner_oplus_link_target))
-else
-endif
-#endif /* OPLUS_FEATURE_POWERINFO_STANDBY */
-
 ifeq ($(OPLUS_FEATURE_SAUPWK),yes)
 export CONFIG_OPLUS_FEATURE_SAUPWK=y
 KBUILD_CFLAGS += -DCONFIG_OPLUS_FEATURE_SAUPWK
